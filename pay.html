@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>支付页面</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <style>
+        .html,
+        body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            /* color: #27b0d6 */
+        }
+
+        .box {
+            /* width: 80%; */
+            height: 100%;
+            margin: 0 auto;
+            text-align: center
+        }
+        #image {
+            width: 60%;
+        }
+
+        @media (min-width: 768) { 
+            #image {
+                width: 26%;
+            }
+         }
+
+        
+
+        .pay_method {
+            line-height: 90px;
+            background: #d0e6d1;
+            font-size: 30px;
+        }
+
+        .imags {
+            width: 40px;
+        }
+
+        #header {
+            margin-bottom: 20px;
+        }
+
+        #banner {
+            margin-bottom: 20px;
+        }
+
+        .fs16 {
+            font-size: 18;
+            line-height: 24px;
+        }
+
+        .fwb {
+            font-weight: bold;
+        }
+
+        .fs24 {
+            font-size: 24px;
+        }
+
+        #timer{
+            font-size: 26px;
+            color: red;
+            margin-right: 10px;
+        }
+        .tim{
+            line-height: 40px;
+        }
+        /****************************************************/
+        #fs26{
+            font-size: 26px;
+            font-weight: bold;
+        }
+        /****************************************************/
+        
+    </style>
+</head>
+
+<body>
+
+
+    <div class="box">
+        <div id="header">
+        </div>
+        <div id="banner"></div>
+        <div class="fs16">过期后请勿支付，不自动到账</div>
+        <div class="fs16 fwb">付款即时到帐,未到帐可联系我们</div>
+        <div>电话：<span>028-66666666</span></div>
+        <div class="fs16 fwb tim">
+            <span id="timer"></span>秒后支付过期</div>
+
+    </div>
+
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+
+        var id = getQueryString("id");
+        var type = getQueryString("type");
+        var time = '';
+
+        // 获取前面传来的数据
+        function getQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); return null;
+        }
+
+        // 二维码部分
+        var cent = document.getElementById("banner");
+        var data = {
+            "id": id,
+            "type": type
+        };
+        $.ajax({
+            url: "http://192.168.3.15:8890/api/order/create",
+            type: "post",
+            data: data,
+            dataType: "json",
+            success: function (result) {
+                console.log(result.data.expireTime);
+
+                if (result.status == 0) {
+                    time=result.data.expireTime;                    
+                    if (type == "01" || type == "02") {
+                        cent.innerHTML +=
+                            "<img id='image' src=" + result.data.payAccount + " >"
+                            /*111111111111111111111111111*/
+                            gettime(time,"image")
+                            /*111111111111111111111111111*/
+                            /**********************************************************************/
+                    } else {
+                        cent.innerHTML +=
+                            "<div id='fs26'>"+result.data.payAccount+"</div>"
+                            /*111111111111111111111111111*/
+                            gettime(time,"fs26")
+                            /*111111111111111111111111111*/
+                    }
+                            /**********************************************************************/
+                    
+                   
+                } else {
+                    alert(result.message)
+                }
+            }
+        })
+
+        // 头部
+        var cents = document.getElementById("header");
+
+        if (type == "01") {
+            cents.innerHTML +=
+                "<div class='pay_method'> <img src= './image/vx.png' class='imags'> 微信支付 </div>"
+        } else
+        if (type == "02") {
+            cents.innerHTML +=
+                "<div class='pay_method'> <img src= './image/alipay.png' class='imags'> 支付宝支付 </div>"
+        } else
+        if (type == "03") {
+            cents.innerHTML +=
+                "<div class='pay_method'> <img src= './image/icbc.png' class='imags'> 工商银行 </div>"
+        } else
+        if (type == "04") {
+            cents.innerHTML +=
+                "<div class='pay_method'> <img src= './image/ccb.png' class='imags'> 建设银行 </div>"
+        } else
+        if (type == "05") {
+            cents.innerHTML +=
+                "<div class='pay_method'> <img src= './image/abc.png' class='imags'> 农业银行 </div>"
+        }
+        /*111111111111111111111111111*/
+        function setid(idee) {
+            document.getElementById(idee).style.display="none";
+            
+        }
+        /*111111111111111111111111111*/
+
+        function gettime(t,idee) {
+            // 倒计时
+            //定义时间  
+            var num = 60*t;
+            //把时间先赋值给timer  
+            document.getElementById("timer").innerHTML = num;
+            //计时器  
+            var idNum = setInterval(function () {
+                //时间减1  
+                num--;
+                //把每次更新的值重新赋值给timer  
+                document.getElementById("timer").innerHTML = num;
+                //如果时间为0时就停止计时器，并且跳转页面  
+                if (num == 0) {
+                    console.log(time);
+                    
+                    //停止计时器  
+                    clearInterval(idNum);
+                    /*111111111111111111111111111*/
+                    document.getElementById(idee).style.display="none";
+                    /*111111111111111111111111111*/
+                    cent.innerHTML +=
+                        "<div class='fs24'>支付已过期</div>"
+                    //跳转  
+                    // location.href = "http://www.taobao.com";
+                }
+            }, 1000);
+        }
+          
+    </script>
+
+</body>
+
+</html>
